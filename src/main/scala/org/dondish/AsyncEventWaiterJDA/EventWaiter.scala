@@ -4,7 +4,6 @@ import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.hooks.EventListener
 
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
 import util.control.Breaks._
@@ -48,6 +47,13 @@ class EventWaiter extends EventListener {
     }
   }
 
+  /**
+    * Waits for an event
+    * @param classType the event to wait for
+    * @param condition the condition to run as
+    * @tparam T the event to wait for
+    * @return the future
+    */
   def waitFor[T <: Event](classType: Class[T], condition: Function[T, Boolean]): Future[T] = {
     val ev = events.getOrElseUpdate(classType, mutable.Set[Entry[_ <: Event]]())
 
@@ -60,5 +66,11 @@ class EventWaiter extends EventListener {
     p.future
   }
 
+  /**
+    * The entry used to save events
+    * @param condition the predicate
+    * @param p the promise to send results to
+    * @tparam T the Event type
+    */
   private class Entry[T <: Event] (val condition: Function[T, Boolean], val p: Promise[T]) {}
 }
