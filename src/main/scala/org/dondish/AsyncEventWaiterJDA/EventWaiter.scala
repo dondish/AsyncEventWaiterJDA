@@ -2,7 +2,7 @@ package org.dondish.AsyncEventWaiterJDA
 
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit, TimeoutException}
 
-import net.dv8tion.jda.core.events.Event
+import net.dv8tion.jda.core.events.{Event, ShutdownEvent}
 import net.dv8tion.jda.core.hooks.EventListener
 
 import scala.collection.mutable
@@ -46,6 +46,10 @@ class EventWaiter(val ec: ScheduledExecutorService = Executors.newSingleThreadSc
         }
 
       }
+    }
+
+    if (event.getClass == classOf[ShutdownEvent]) {
+      ec.shutdown()
     }
   }
 
