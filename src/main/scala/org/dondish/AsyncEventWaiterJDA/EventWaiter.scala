@@ -1,18 +1,20 @@
 package org.dondish.AsyncEventWaiterJDA
 
+import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit, TimeoutException}
+
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.hooks.EventListener
 
 import scala.collection.mutable
 import scala.concurrent.{Future, Promise}
-
-import util.control.Breaks._
+import scala.util.control.Breaks._
 
 
 /**
   * The Event Waiter
+  * @param ec used to schedule cancellation of promises of events when timed out. we need only one thread.
   */
-class EventWaiter extends EventListener {
+class EventWaiter(val ec: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()) extends EventListener {
 
   /**
     * A <mutable.HashMap> from the classes to the entries
@@ -62,6 +64,32 @@ class EventWaiter extends EventListener {
     val entry = new Entry[T](condition, p)
 
     ev.add(entry)
+
+    p.future
+  }
+
+  /**
+    * Wait for an event but with timeouts
+    * @param classType the class type
+    * @param condition the condition to execute by
+    * @param timeout the timeout length
+    * @param unit the time unit of the timeout
+    * @tparam T the type of the event
+    * @return the future of the event
+    */
+  def waitFor[T <: Event](classType: Class[T], condition: Function[T, Boolean], timeout: Long, unit: TimeUnit): Future[T] = {
+    val ev = events.getOrElseUpdate(classType, mutable.Set[Entry[_ <: Event]]())
+
+    val p = Promise[T]()
+
+    val entry = new Entry[T](condition, p)
+
+    ev.add(entry)
+
+    ec.schedule(()=>{
+      entry.p.failure(new TimeoutException())
+      events(classType).remove(entry)
+    }, timeout, unit)
 
     p.future
   }
