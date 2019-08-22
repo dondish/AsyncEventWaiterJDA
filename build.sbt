@@ -1,11 +1,11 @@
 name := "AsyncEventWaiterJDA"
 organization := "org.dondish"
-scalaVersion := "2.12.7"
-version := "1.1.0"
+version := "1.2.0"
+crossScalaVersions := List("2.13.0", "2.12.7")
 resolvers += "jcenter-bintray" at "https://jcenter.bintray.com"
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
-  "net.dv8tion" % "JDA" % "3.8.1_439"
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+  "net.dv8tion" % "JDA" % "3.8.3_464"
 )
 bintrayOrganization := Some("dondishorg")
 bintrayRepository := "oss-maven"
