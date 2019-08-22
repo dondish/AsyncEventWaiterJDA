@@ -1,6 +1,7 @@
 name := "AsyncEventWaiterJDA"
 organization := "org.dondish"
-version := "1.2.0"
+scalaVersion := "2.13.0"
+version := "1.2.1"
 crossScalaVersions := List("2.13.0", "2.12.7")
 resolvers += "jcenter-bintray" at "https://jcenter.bintray.com"
 libraryDependencies ++= Seq(
