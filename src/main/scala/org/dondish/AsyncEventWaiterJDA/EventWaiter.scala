@@ -2,8 +2,8 @@ package org.dondish.AsyncEventWaiterJDA
 
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit, TimeoutException}
 
-import net.dv8tion.jda.core.events.{Event, ShutdownEvent}
-import net.dv8tion.jda.core.hooks.EventListener
+import net.dv8tion.jda.api.events.{Event, GenericEvent, ShutdownEvent}
+import net.dv8tion.jda.api.hooks.EventListener
 
 import scala.collection.mutable
 import scala.concurrent.{Future, Promise}
@@ -19,13 +19,13 @@ class EventWaiter(val ec: ScheduledExecutorService = Executors.newSingleThreadSc
   /**
     * A <mutable.HashMap> from the classes to the entries
     */
-  private val events = new mutable.HashMap[Class[_], mutable.Set[Entry[_ <: Event]]]
+  private val events = new mutable.HashMap[Class[_], mutable.Set[Entry[_ <: GenericEvent]]]
 
   /**
     * Event listening
     * @param event the event
     */
-  override def onEvent(event: Event): Unit = {
+  override def onEvent(event: GenericEvent): Unit = {
     val ev = events.get(event.getClass)
 
     if (ev.isDefined) { // whether we have events to wait for
@@ -60,8 +60,8 @@ class EventWaiter(val ec: ScheduledExecutorService = Executors.newSingleThreadSc
     * @tparam T the event to wait for
     * @return the future
     */
-  def waitFor[T <: Event](classType: Class[T], condition: Function[T, Boolean]): Future[T] = {
-    val ev = events.getOrElseUpdate(classType, mutable.Set[Entry[_ <: Event]]())
+  def waitFor[T <: GenericEvent](classType: Class[T], condition: Function[T, Boolean]): Future[T] = {
+    val ev = events.getOrElseUpdate(classType, mutable.Set[Entry[_ <: GenericEvent]]())
 
     val p = Promise[T]()
 
@@ -81,8 +81,8 @@ class EventWaiter(val ec: ScheduledExecutorService = Executors.newSingleThreadSc
     * @tparam T the type of the event
     * @return the future of the event
     */
-  def waitFor[T <: Event](classType: Class[T], condition: Function[T, Boolean], timeout: Long, unit: TimeUnit): Future[T] = {
-    val ev = events.getOrElseUpdate(classType, mutable.Set[Entry[_ <: Event]]())
+  def waitFor[T <: GenericEvent](classType: Class[T], condition: Function[T, Boolean], timeout: Long, unit: TimeUnit): Future[T] = {
+    val ev = events.getOrElseUpdate(classType, mutable.Set[Entry[_ <: GenericEvent]]())
 
     val p = Promise[T]()
 
@@ -104,5 +104,5 @@ class EventWaiter(val ec: ScheduledExecutorService = Executors.newSingleThreadSc
     * @param p the promise to send results to
     * @tparam T the Event type
     */
-  private class Entry[T <: Event] (val condition: Function[T, Boolean], val p: Promise[T]) {}
+  private class Entry[T <: GenericEvent] (val condition: Function[T, Boolean], val p: Promise[T]) {}
 }
